@@ -74,7 +74,7 @@ class Mat_dataset(data.Dataset):
             fs.write(self.files[index - 1][:-1] + '_' + str(i) + '\n')
         return t3.float().cuda(),le.float().cuda() # 降低数据精度
 
-    def __getitem__(self,index):
+    def __getitemD__(self,index):# DNet版本
 
         A_name = 'D:\大四下\继续毕设\mmwave感知训练\dataset\RAs\\'+self.files[index-1][:19]+'A'+self.files[index-1][19:-1]+'.npy'
         D_name = 'D:\大四下\继续毕设\mmwave感知训练\dataset\RDs\\'+self.files[index-1][:19]+'D'+self.files[index-1][19:-1]+'.npy'
@@ -84,10 +84,27 @@ class Mat_dataset(data.Dataset):
         ground_truth=np.load(L_name)
         t1 = torch.tensor(mat_dataA)
         t2 = torch.tensor(mat_dataD)
-        le=torch.tensor(ground_truth)
+        le1=torch.tensor(ground_truth)
         t3=torch.cat((t1,t2),1)
         t4=F.normalize(t3.reshape(16,16,308),dim=0)
+        le=F.normalize(le1,dim=0)
         return t4.cuda(),le.cuda() # 降低数据精度,[256,308] [20]
+
+    def __getitem__(self,index):# ENet版本
+
+        A_name = './dataset/RAs/'+self.files[index-1][:19]+'A'+self.files[index-1][19:-1]+'.npy' # 服务器可用
+        D_name = './dataset/RDs/'+self.files[index-1][:19]+'D'+self.files[index-1][19:-1]+'.npy'
+        L_name='./dataset/ground/'+self.files[index-1][:19]+'g'+self.files[index-1][19:-1]+'.npy'
+        mat_dataA = np.load(A_name)
+        mat_dataD = np.load(D_name)
+        ground_truth=np.load(L_name)
+        t1 = torch.tensor(mat_dataA)
+        t2 = torch.tensor(mat_dataD)# [256,180]和[256,128]
+        le1=torch.tensor(ground_truth)
+        t3 = F.normalize(t1.reshape(4, 128, 90), dim=0)
+        t4 = F.normalize(t2.reshape(4, 128, 64), dim=0)
+        le = F.normalize(le1, dim=0)
+        return (t3.cuda(),t4.cuda()),le.cuda() # 降低数据精度,[256,308] [20]
 
     def __len__(self):
         return len(self.files)

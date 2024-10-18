@@ -10,7 +10,7 @@ from tensorboardX import SummaryWriter
 # 定义参数
 channels=1
 batch=10
-model_path='./model_dir3/'
+model_path='./model_dir5/'
 learning_rate=0.005
 writer = SummaryWriter(log_dir='logs')
 # 定义模型
@@ -50,7 +50,7 @@ writer = SummaryWriter(log_dir='logs')
 #                     nn.Flatten(), nn.Linear(128, 6))
 # net=nn.Sequential(t1)
 
-net=DNet()
+net=ENet()
 net=net.cuda()
 
 # 使用L1 Huber损失函数
@@ -95,7 +95,7 @@ def train_epoch_ch3(net, train_iter, loss, updater,epoch):  #@save
         l = loss(y_hat, y)
 
         running_loss+=l.item()
-        print(l)
+        # print(l)
         if isinstance(updater, torch.optim.Optimizer):
             # 使用PyTorch内置的优化器和损失函数
             updater.zero_grad()
@@ -127,13 +127,14 @@ def train_ch3(net, train_iter, test_iter, loss, num_epochs, updater):  #@save
     # animator = Animator(xlabel='epoch', xlim=[1, num_epochs], ylim=[0.3, 0.9],
     #                     legend=['train loss', 'train acc', 'test acc'])
     # 加载模型，继续训练
-    state_dict=torch.load('./model_dir3/epoch_220_000170.pth')
-    # print(state_dict.keys())
-    net.load_state_dict(state_dict)
+    # state_dict=torch.load('./model_dir3/epoch_220_000170.pth')
+    # # print(state_dict.keys())
+    # net.load_state_dict(state_dict)
     for epoch in range(num_epochs):
         print(epoch)
         train_metrics,epoch_loss = train_epoch_ch3(net, train_iter, loss, updater,epoch)
         writer.add_scalar('loss', epoch_loss, epoch)
+        print(epoch_loss)
         test_acc = evaluate_accuracy(net, test_iter)
         if epoch%10==0:
             torch.save(net.state_dict(), model_path + 'epoch_220_{0:06d}'.format(epoch) + '.pth')
